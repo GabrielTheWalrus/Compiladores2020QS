@@ -3,9 +3,12 @@ package br.com.mealegabriel.isilanguage.ast;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 import br.com.mealegabriel.isilanguage.datastructures.IsiSymbol;
 import br.com.mealegabriel.isilanguage.datastructures.IsiSymbolTable;
+import br.com.mealegabriel.isilanguage.datastructures.IsiVariable;
+import br.com.mealegabriel.isilanguage.exceptions.IsiSemanticExceptions;
 
 public class IsiProgram {
 	
@@ -19,16 +22,18 @@ public class IsiProgram {
 		
 		str.append("import java.util.Scanner;\n");
 		str.append("public class MainClass{ \n");
-		str.append("  public static void main(String args[]){\n ");
-		str.append("      Scanner _key = new Scanner(System.in);\n");
+		str.append("\tpublic static void main(String args[]){\n ");
+		str.append("\tScanner _key = new Scanner(System.in);\n");
 		for (IsiSymbol symbol: varTable.getAll()) {
+			str.append("\t");
 			str.append(symbol.generateJavaCode()+"\n");
 		}
 		for (AbstractCommand command: comandos) {
+			str.append("\t");
 			str.append(command.generateJavaCode()+"\n");
 		}
-		str.append("  }");
-		str.append("}");
+		str.append("  }\n");
+		str.append("}\n");
 		
 		try {
 			FileWriter fr = new FileWriter(new File("MainClass.java"));
@@ -44,6 +49,24 @@ public class IsiProgram {
 		return varTable;
 	}
 	
+	
+	public void getVariables() {
+		
+		List<IsiVariable> vars = varTable.getAllUnused();
+		
+		String errorMsg = "Variáveis declaradas mas não utilizadas: ";
+		
+		for(IsiVariable var: vars) {
+			
+			errorMsg += var.getName() + " - ";
+		}
+		
+		if(vars.size() > 0) {
+			throw new IsiSemanticExceptions(errorMsg);
+		}
+		
+	}
+
 	public void setVarTable(IsiSymbolTable varTable) {
 		this.varTable = varTable;
 	}
@@ -63,6 +86,8 @@ public class IsiProgram {
 	public void setProgramName(String programName) {
 		this.programName = programName;
 	}
+	
+	
 	
 	
 

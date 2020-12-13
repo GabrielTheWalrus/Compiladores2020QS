@@ -1,11 +1,28 @@
 programa
-declare a,b,c,d.
+
+declare numero a,b,c,d.
+declare texto e.
+
+## esse é um comentário
+	sobre a isilanguage
+##
+
+e := "a".
+
+
+# comentário em uma linha
+
+a := 0.56.
+b := 2.
+
+c :=  a + b * c. 
+
 escreva("Programa Teste").
 escreva ("Digite A").
 leia (a).
 escreva ("Digite B").
 leia (b).
-se (a<b) entao
+se (a==b) entao
 {
  c := a + b.
 }senao
@@ -13,8 +30,19 @@ se (a<b) entao
  c := a - b.
 }
 escreva ("C e igual a ").
-escreva (c).
+escreva (a).
 d := c * a + b.
 escreva ("D e igual a ").
 escreva (d).
+
+enquanto(a<d){
+
+	a := a+1.
+}
+
+para(a := 1. a <= b. a := a+1){
+
+	b := a.
+}
+
 fimprog.

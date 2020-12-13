@@ -26,19 +26,20 @@ public class MainClass {
 			
 			parser.prog();
 			
-			parser.exibeComandos();
+			//parser.exibeComandos();
 			
 			parser.generateCode();
+			
+			
 			
 			System.out.println("Compilado com sucesso!");
 			
 		} catch (IsiSemanticExceptions e) {
-			// TODO Auto-generated catch block
-			//System.err.println("Semantic Error - " + e.getMessage());
-			e.printStackTrace();
+			System.err.println("Semantic Error - " + e.getMessage());
+			
 		} catch (Exception e) {
-			//System.err.println("Error - " + e.getMessage());
-			e.printStackTrace();
+			System.err.println("Error - " + e.getMessage());
+			
 		}
 		
 	}

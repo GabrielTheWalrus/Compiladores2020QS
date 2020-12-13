@@ -6,7 +6,7 @@ public class IsiVariable extends IsiSymbol{
 	public static final int TEXT = 1;
 	
 	private int type;
-	private String value;
+	public String value;
 	
 	public IsiVariable(String name, int type, String value) {
 		

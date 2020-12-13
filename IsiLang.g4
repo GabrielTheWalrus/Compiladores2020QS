@@ -31,6 +31,11 @@ grammar IsiLang;
 	private String _exprContent;
 	private String _exprIf;
 	private String _exprWhile;
+	private String _exprStartID;
+	private String _exprStartContent;
+	private String _exprCondition;
+	private String _exprIncrementoID;
+	private String _exprIncrementoContent;
 	
 	private void insertSymbol(String varName){
 	
@@ -42,6 +47,19 @@ grammar IsiLang;
 			symbolTable.add(symbol); 
 		else
 			throw new IsiSemanticExceptions("Symbol " + _varName + " já declarado.");
+		
+	}
+	
+	private void insertValueSymbol(){
+	
+		symbol = (IsiVariable)symbolTable.get(_varName);
+		
+		if(symbol != null){
+			symbol.value = _varValue;
+			symbolTable.update(symbol);
+		} 
+		else
+			throw new IsiSemanticExceptions("Symbol " + _varName + " não declarado.");
 		
 	}
 	
@@ -59,6 +77,7 @@ grammar IsiLang;
 	
 	public void generateCode(){
 		program.generateTarget();
+		program.getVariables();
 	}
 }
 
@@ -94,7 +113,7 @@ tipo : 'numero' { _tipo = IsiVariable.NUMBER; }
      | 'texto'  { _tipo = IsiVariable.TEXT; }
      ;
       
-cmd : cmdleitura | cmdescrita | cmdif | cmdwhile | cmdexpr
+cmd : cmdleitura | cmdescrita | cmdif | cmdwhile | cmdexpr | cmdfor
     ;
 
 cmdleitura : 'leia' AP ID {
@@ -176,16 +195,59 @@ cmdwhile   : 'enquanto'
 	                  	stack.peek().add(cmd);
                		}
            ;
+           
+cmdfor   : 'para' 
+					AP
+					ID { 
+							verificaID(_input.LT(-1).getText());
+							_exprStartID = _input.LT(-1).getText(); 
+					   }
+					ATTR 
+					termo { _exprStartContent = _input.LT(-1).getText(); }
+					(OP { _exprStartContent += _input.LT(-1).getText(); }
+					termo { _exprStartContent += _input.LT(-1).getText(); })*
+					DOT
+					expr { _exprCondition = _input.LT(-1).getText(); }
+					Op_rel { _exprCondition += _input.LT(-1).getText(); }
+					expr { _exprCondition += _input.LT(-1).getText(); }
+					DOT
+					ID { 
+							verificaID(_input.LT(-1).getText());
+							_exprIncrementoID = _input.LT(-1).getText(); 
+						}
+					ATTR 
+					termo { _exprIncrementoContent = _input.LT(-1).getText(); }
+					(OP { _exprIncrementoContent += _input.LT(-1).getText(); }
+					termo { _exprIncrementoContent += _input.LT(-1).getText(); })*
+					FP
+					AC
+						{
+							curThread = new ArrayList<AbstractCommand>(); 
+                  			stack.push(curThread);
+						}
+					cmd
+					FC
+					{
+	                  	listaComando = stack.pop();
+	                  	CommandFor cmd = new CommandFor(_exprStartID, _exprStartContent, _exprCondition, _exprIncrementoID,  _exprIncrementoContent, listaComando);
+	                  	stack.peek().add(cmd);
+               		}
+           ;
 
 cmdexpr    : ID {
                     
                     verificaID(_input.LT(-1).getText());
                     _exprID = _input.LT(-1).getText();
+                    _varName = _input.LT(-1).getText();
 				} 
 				
 				ATTR { _exprContent = ""; }
 				
-				expr DOT
+				expr { _varValue = _input.LT(-1).getText(); }  
+				
+				DOT
+				
+				{ insertValueSymbol(); }
 				
 				{ 
 					CommandAtribuicao cmd = new CommandAtribuicao(_exprID, _exprContent);
@@ -206,7 +268,7 @@ termo : ID {
                     
                     verificaID(_input.LT(-1).getText());
                     _exprContent += _input.LT(-1).getText();
-				} 
+			} 
       | NUM 
       { _exprContent += _input.LT(-1).getText(); }
       | TEXTO
@@ -237,7 +299,17 @@ FP : ')'
 DOT : '.'
     ;
    
-WS : (' ' | '\t' | '\n' | '\r') -> skip;
+WS : (' ' | '\t' | '\n' | '\r' ) -> skip;
+
+
+LINE_COMMENT
+    : '#' ~[\r\n]* -> skip
+;
+
+COMMENT
+    : '##' .*? '##' -> skip
+;
+        
 
 NUM : ([0-9])+ ('.' [0-9]+)?
     ;
